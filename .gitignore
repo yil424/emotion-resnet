@@ -1,0 +1,20 @@
+# Dadaset
+Data/
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+*.pyo
+
+# venv
+.venv/
+env/
+venv/
+
+# IDE / vscode
+.idea/
+.vscode/
+
+# sytem file
+.DS_Store
+Thumbs.db
