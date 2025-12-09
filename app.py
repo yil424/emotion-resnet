@@ -362,7 +362,7 @@ def generate_emotion_response_llm(emotion: str) -> str:
     user_msg = (
         f"The detected emotion is: {emotion}.\n\n"
         "Write a short message directly to the user. "
-        "If they seem sad or worried, be warm and encouraging and include a tiny light-hearted joke. "
+        "If they seem sad or worried, be warm and encouraging and give user a tiny light-hearted joke. "
         "If they seem happy or surprised, be playful and positive. "
         "Reply in at most 8 sentences."
     )
@@ -527,6 +527,7 @@ else:
             }
             st.session_state.show_result = True
             st.rerun()
+
 
 
 
