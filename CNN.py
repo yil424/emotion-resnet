@@ -219,7 +219,7 @@ def main():
     print("Using device:", device)
 
     batch_size = 64
-    num_epochs = 10
+    num_epochs = 15
     learning_rate = 1e-4
 
     train_loader, val_loader, test_loader, class_names = build_dataloaders(
