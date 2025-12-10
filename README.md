@@ -7,3 +7,4 @@
 - Demo: Streamlit app + Qwen3: 8b for emotion-aware responses.
 
 > Note: The dataset is not included in this repo due to size.
+Web Link: https://emotion-resnet.streamlit.app
