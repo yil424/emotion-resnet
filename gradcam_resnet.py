@@ -206,13 +206,11 @@ def save_gradcam_figure(
 
     plt.figure(figsize=(6, 3))
 
-    # 左：原图
     plt.subplot(1, 2, 1)
     plt.imshow(img_np)
     plt.title(f"Original ({class_name})")
     plt.axis("off")
 
-    # 右：叠加热力图
     plt.subplot(1, 2, 2)
     plt.imshow(img_np)
     plt.imshow(cam, cmap="jet", alpha=0.4)
