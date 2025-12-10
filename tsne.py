@@ -138,9 +138,6 @@ class ResNet18SE(nn.Module):
         return x
 
     def extract_features(self, x):
-        """
-        提取倒数第二层的 512 维 embedding（在 fc 之前）
-        """
         x = self.conv1(x)
         x = self.bn1(x)
         x = self.relu(x)
