@@ -6,5 +6,6 @@
 - Interpretability: t-SNE on penultimate features, Grad-CAM heatmaps.
 - Demo: Streamlit app + Qwen3: 8b for emotion-aware responses.
 
+- Web Link: https://emotion-resnet.streamlit.app
+
 > Note: The dataset is not included in this repo due to size.
-Web Link: https://emotion-resnet.streamlit.app
