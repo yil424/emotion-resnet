@@ -9,7 +9,7 @@ from torchvision.datasets import ImageFolder
 from torchvision import transforms
 from torchvision.models import resnet18, ResNet18_Weights
 from PIL import Image
-
+from resnet_se_sa import ResNet18SE_SA
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -226,7 +226,7 @@ def save_gradcam_figure(
 def main():
     project_dir = os.path.dirname(os.path.abspath(__file__))
     data_dir = os.path.join(project_dir, "Data")
-    best_model_path = os.path.join(project_dir, "resnet18_se_best.pth")
+    best_model_path = os.path.join(project_dir, "resnet18_se_sa_best_1.pth")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using device:", device)
@@ -237,18 +237,18 @@ def main():
     )
     num_classes = len(class_names)
 
-    model = ResNet18SE(num_classes=num_classes, pretrained=False).to(device)
+    model = ResNet18SE_SA(num_classes=num_classes, pretrained=False).to(device)
     state_dict = torch.load(best_model_path, map_location=device)
     model.load_state_dict(state_dict)
     model.eval()
 
-    target_layer = model.layer4
+    target_layer = model.sa
     gradcam = GradCAM(model, target_layer, device)
 
     num_per_class = 3
     saved_count = {i: 0 for i in range(num_classes)}
 
-    out_dir = os.path.join(project_dir, "gradcam_resnet_se")
+    out_dir = os.path.join(project_dir, "gradcam_resnet_se_sa")
     os.makedirs(out_dir, exist_ok=True)
 
     for images, labels, paths in test_loader:

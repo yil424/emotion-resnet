@@ -12,6 +12,7 @@ from PIL import Image
 import numpy as np
 from sklearn.manifold import TSNE
 import matplotlib.pyplot as plt
+from resnet_se_sa import ResNet18SE_SA
 
 
 #Dataset / Dataloader
@@ -160,7 +161,7 @@ class ResNet18SE(nn.Module):
 def main():
     project_dir = os.path.dirname(os.path.abspath(__file__))
     data_dir = os.path.join(project_dir, "Data")
-    best_model_path = os.path.join(project_dir, "resnet18_se_best.pth")
+    best_model_path = os.path.join(project_dir, "resnet18_se_sa_best_1.pth")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using device:", device)
@@ -172,7 +173,7 @@ def main():
 
     num_classes = len(class_names)
 
-    model = ResNet18SE(num_classes=num_classes, pretrained=False).to(device)
+    model = ResNet18SE_SA(num_classes=num_classes, pretrained=False).to(device)
     state_dict = torch.load(best_model_path, map_location=device)
     model.load_state_dict(state_dict)
     model.eval()
@@ -183,10 +184,23 @@ def main():
     max_samples = 2000
     collected = 0
 
+    pooled_batches = []
+
+    def _avgpool_hook(module, inp, out):
+        # out shape: [B, 512, 1, 1]
+        pooled_batches.append(out.detach())
+
+    handle = model.avgpool.register_forward_hook(_avgpool_hook)
+
     with torch.no_grad():
         for images, labels in test_loader:
             images = images.to(device)
-            feats = model.extract_features(images)  # [B, 512]
+
+            pooled_batches.clear()
+            _ = model(images)
+
+            pooled = pooled_batches[0]  # [B, 512, 1, 1]
+            feats = pooled.flatten(1)  # [B, 512]
 
             all_features.append(feats.cpu().numpy())
             all_labels.append(labels.cpu().numpy())
@@ -195,8 +209,11 @@ def main():
             if collected >= max_samples:
                 break
 
+    handle.remove()
+
     features = np.concatenate(all_features, axis=0)
     labels = np.concatenate(all_labels, axis=0)
+
     if features.shape[0] > max_samples:
         features = features[:max_samples]
         labels = labels[:max_samples]
@@ -225,7 +242,7 @@ def main():
         )
 
     plt.legend()
-    plt.title("t-SNE of ResNet18-SE penultimate features (test set)")
+    plt.title("t-SNE of ResNet18-SE-SA penultimate features (test set)")
     plt.tight_layout()
 
     out_path = os.path.join(project_dir, "resnet18_se_tsne.png")
