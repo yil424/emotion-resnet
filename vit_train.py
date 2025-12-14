@@ -12,10 +12,7 @@ from PIL import Image
 from vit_emotion import EmotionViT
 
 
-# =========================
 #  Dataset & Dataloaders
-# =========================
-
 class EmotionSubset(Dataset):
     def __init__(self, base_dataset, indices, transform=None):
         self.base_dataset = base_dataset
@@ -42,13 +39,6 @@ def build_dataloaders(
     train_ratio: float = 0.8,
     val_ratio: float = 0.1,
 ) -> Tuple[DataLoader, DataLoader, DataLoader, list]:
-    """
-    和你 resnet_se.py 中类似的划分：
-    - 灰度统一转成 3 通道
-    - 224x224
-    - train: flip + small rotation
-    - val/test: 只做 resize + normalize
-    """
 
     train_transform = transforms.Compose([
         transforms.Grayscale(num_output_channels=3),
@@ -57,7 +47,7 @@ def build_dataloaders(
         transforms.RandomRotation(degrees=10),
         transforms.ToTensor(),
         transforms.Normalize(
-            mean=[0.485, 0.456, 0.406],   # ImageNet 归一化
+            mean=[0.485, 0.456, 0.406], 
             std=[0.229, 0.224, 0.225]
         )
     ])
@@ -111,10 +101,8 @@ def build_dataloaders(
     return train_loader, val_loader, test_loader, class_names
 
 
-# =========================
-#  Train / Eval Helpers
-# =========================
 
+#  Train / Eval Helpers
 def train_one_epoch(model, dataloader, criterion, optimizer, device):
     model.train()
     running_loss = 0.0
@@ -165,10 +153,8 @@ def eval_one_epoch(model, dataloader, criterion, device):
     return epoch_loss, epoch_acc
 
 
-# =========================
-#  Main Training Script
-# =========================
 
+#  Main Training Script
 def main():
     project_dir = os.path.dirname(os.path.abspath(__file__))
     data_dir = os.path.join(project_dir, "Data")
@@ -185,7 +171,6 @@ def main():
         batch_size=batch_size
     )
 
-    # 构建 EmotionViT 模型
     model = EmotionViT(
         img_size=224,
         patch_size=16,
@@ -226,9 +211,8 @@ def main():
 
     print(f"[ViT] Training finished. Best val_acc = {best_val_acc:.4f}")
 
-    # =========================
+
     #  Evaluate on test set
-    # =========================
     print("\n[ViT] Evaluating on test set using best model...")
 
     best_model = EmotionViT(
