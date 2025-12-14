@@ -5,9 +5,6 @@ import torch.nn.functional as F
 
 
 class PatchEmbedding(nn.Module):
-    """
-    224x224 -> 14x14 patches (patch_size=16), each embedded to embed_dim.
-    """
     def __init__(self, img_size=224, patch_size=16, in_chans=3, embed_dim=256):
         super().__init__()
         self.img_size = img_size
@@ -28,11 +25,6 @@ class PatchEmbedding(nn.Module):
 
 
 class TokenSE(nn.Module):
-    """
-    Token-wise Squeeze-Excitation:
-    输入: patch tokens [B, N, D]
-    输出: 重加权后的 tokens [B, N, D]
-    """
     def __init__(self, num_tokens: int, reduction: int = 4):
         super().__init__()
         hidden = max(1, num_tokens // reduction)
@@ -44,11 +36,8 @@ class TokenSE(nn.Module):
         )
 
     def forward(self, x):
-        # x: [B, N, D] (不含 CLS)
         B, N, D = x.shape
-        # 在 embedding 维度上做 mean，得到每个 token 的“强度”
         token_stats = x.mean(dim=-1)  # [B, N]
-        # 通过 bottleneck FC 得到权重
         w = self.fc(token_stats)      # [B, N]
         w = w.unsqueeze(-1)           # [B, N, 1]
         return x * w                  # [B, N, D]
@@ -90,14 +79,11 @@ class EmotionViT(nn.Module):
             nhead=num_heads,
             dim_feedforward=int(embed_dim * mlp_ratio),
             dropout=drop_rate,
-            batch_first=True,   # 直接 [B, N, D]
+            batch_first=True, 
         )
         self.encoder = nn.TransformerEncoder(encoder_layer, num_layers=depth)
-
-        # Token-wise SE attention (只对 patch tokens 做)
         self.token_se = TokenSE(num_tokens=num_patches, reduction=4)
 
-        # Classification head: Dual pooling (CLS + mean-patch)
         self.norm = nn.LayerNorm(embed_dim)
         self.head = nn.Sequential(
             nn.Linear(embed_dim * 2, embed_dim),
@@ -111,7 +97,6 @@ class EmotionViT(nn.Module):
     def _init_weights(self):
         nn.init.trunc_normal_(self.pos_embed, std=0.02)
         nn.init.trunc_normal_(self.cls_token, std=0.02)
-        # 简单初始化 Linear/LayerNorm
         for m in self.modules():
             if isinstance(m, nn.Linear):
                 nn.init.trunc_normal_(m.weight, std=0.02)
@@ -122,9 +107,6 @@ class EmotionViT(nn.Module):
                 nn.init.zeros_(m.bias)
 
     def forward_features(self, x):
-        """
-        返回 penultimate features（用于 t-SNE 等）
-        """
         B = x.shape[0]
         x = self.patch_embed(x)  # [B, N, D]
         N = x.shape[1]
@@ -137,14 +119,11 @@ class EmotionViT(nn.Module):
 
         x = self.encoder(x)  # [B, 1+N, D]
 
-        # 拆开 CLS 和 patch tokens
         cls_token = x[:, 0:1, :]      # [B, 1, D]
         patch_tokens = x[:, 1:, :]    # [B, N, D]
 
-        # 对 patch tokens 做 token-wise SE
         patch_tokens = self.token_se(patch_tokens)     # [B, N, D]
 
-        # 再拼回去（如果后面还要用）
         x = torch.cat([cls_token, patch_tokens], dim=1)
 
         # LayerNorm
