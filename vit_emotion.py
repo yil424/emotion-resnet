@@ -12,7 +12,6 @@ class PatchEmbedding(nn.Module):
         self.grid_size = img_size // patch_size
         self.num_patches = self.grid_size * self.grid_size
 
-        # 用一个 stride = patch_size 的 Conv2d 来做 patch embedding
         self.proj = nn.Conv2d(in_chans, embed_dim,
                               kernel_size=patch_size, stride=patch_size)
 
