@@ -3,8 +3,9 @@
 - Dataset: 5 emotions (Angry, Fear, Happy, Sad, Surprise), ~59k images.
 - Baseline: Custom CNN with data augmentation (flip + rotation).
 - Advanced model: SE-ResNet18 (ImageNet pretrained + Squeeze-and-Excitation).
+- Self-designed advanced model: SE-ResNet18 + SpatialAttention + label smoothing
 - Interpretability: t-SNE on penultimate features, Grad-CAM heatmaps.
-- Demo: Streamlit app + Qwen3: 8b for emotion-aware responses.
+- Demo: Streamlit app + Qwen2.5:1.5B-Instruct for emotion-aware responses.
 
 - Web Link: https://emotion-resnet.streamlit.app
 
